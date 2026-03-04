@@ -1,0 +1,71 @@
+﻿@using SportsCalendar.Data.Entities
+@using SportsCalendar.Services
+@inject ExerciseService ExerciseService
+
+@if (Visible)
+{
+    <div class="modal show d-block">
+        <div class="modal-dialog">
+            <div class="modal-content p-3">
+                <h5>Добавить упражнение</h5>
+                <select @bind="SelectedTypeId" class="form-select mb-2">
+                    @foreach (var t in Types)
+                    {
+                        <option value="@t.Id">@t.Name (@t.Unit)</option>
+                    }
+                </select>
+                <input type="number" @bind="Value" class="form-control mb-2" />
+                <button class="btn btn-success" @onclick="Save">Сохранить</button>
+                <button class="btn btn-secondary" @onclick="Hide">Отмена</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public DateTime Date { get; set; }
+    [Parameter] public EventCallback OnSaved { get; set; }
+
+    private bool Visible = false;
+    private Guid SelectedTypeId;
+    private decimal Value;
+    private List<ExerciseType> Types = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Types = await ExerciseService.GetExerciseTypesAsync();
+        if (Types.Count > 0) SelectedTypeId = Types[0].Id;
+    }
+
+    public void Show(DateTime date)
+    {
+        Date = date;
+        Value = 0;
+        Visible = true;
+        StateHasChanged();
+    }
+
+    private void Hide()
+    {
+        Visible = false;
+        StateHasChanged();
+    }
+
+    private async Task Save()
+    {
+        if (SelectedTypeId == Guid.Empty) return;
+
+        var exercise = new Exercise
+        {
+            Id = Guid.NewGuid(),
+            Date = DateOnly.FromDateTime(Date),
+            ExerciseTypeId = SelectedTypeId,
+            Value = Value,
+            IsCompleted = false
+        };
+
+        await ExerciseService.AddExerciseAsync(exercise);
+        await OnSaved.InvokeAsync();
+        Hide();
+    }
+}

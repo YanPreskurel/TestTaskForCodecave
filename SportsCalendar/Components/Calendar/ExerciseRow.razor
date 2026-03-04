@@ -1,0 +1,32 @@
+﻿@using SportsCalendar.Data.Entities
+@using SportsCalendar.Services
+@inject ExerciseService ExerciseService
+
+<tr>
+    <td>@Exercise.ExerciseType.Name</td>
+    <td>@Exercise.Value @Exercise.ExerciseType.Unit</td>
+    <td>
+        <input type="checkbox" checked="@Exercise.IsCompleted" @onchange="ToggleStatus" />
+    </td>
+    <td>
+        <button class="btn btn-danger btn-sm" @onclick="Delete">Удалить</button>
+    </td>
+</tr>
+
+@code {
+    [Parameter] public Exercise Exercise { get; set; }
+    [Parameter] public EventCallback OnUpdated { get; set; }
+
+    private async Task ToggleStatus(ChangeEventArgs e)
+    {
+        Exercise.IsCompleted = (bool)e.Value;
+        await ExerciseService.UpdateExerciseAsync(Exercise);
+        await OnUpdated.InvokeAsync();
+    }
+
+    private async Task Delete()
+    {
+        await ExerciseService.DeleteExerciseAsync(Exercise.Id);
+        await OnUpdated.InvokeAsync();
+    }
+}

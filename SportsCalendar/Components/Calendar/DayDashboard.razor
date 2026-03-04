@@ -1,0 +1,66 @@
+﻿@using SportsCalendar.Data.Entities
+@using SportsCalendar.Services
+@inject ExerciseService ExerciseService
+
+@if (Date != default)
+{
+    <h5>Упражнения за @Date.ToShortDateString()</h5>
+
+    <ExerciseEditor @ref="EditorRef" Date="Date" OnSaved="ReloadExercises" />
+    <button class="btn btn-primary mb-2" @onclick="() => EditorRef.Show(Date)">Добавить упражнение</button>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Упражнение</th>
+                <th>Значение</th>
+                <th>Статус</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Exercises.Count > 0)
+            {
+                @foreach (var ex in Exercises)
+                {
+                    <ExerciseRow Exercise="ex" OnUpdated="ReloadExercises" />
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center">Нет упражнений на этот день</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public DateTime Date { get; set; }
+    private List<Exercise> Exercises = new();
+    private ExerciseEditor EditorRef;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadExercises();
+    }
+
+    public async Task Reload(DateTime date)
+    {
+        Date = date;
+        await LoadExercises();
+        StateHasChanged();
+    }
+
+    private async Task LoadExercises()
+    {
+        Exercises = await ExerciseService.GetExercisesByDateAsync(DateOnly.FromDateTime(Date));
+    }
+
+    private async Task ReloadExercises()
+    {
+        await LoadExercises();
+        StateHasChanged();
+    }
+}

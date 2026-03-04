@@ -1,0 +1,84 @@
+﻿@page "/calendar"
+@using SportsCalendar.Components.Calendar
+@using SportsCalendar.Data.Entities
+
+<h3>Календарь</h3>
+
+<div class="row">
+    <!-- Левая колонка: календарь -->
+    <div class="col-8">
+        <table class="table table-bordered text-center">
+            <thead>
+                <tr>
+                    @foreach (var dayName in new[] { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" })
+                    {
+                        <th>@dayName</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var week in MonthMatrix)
+                {
+                    <tr>
+                        @foreach (var day in week)
+                        {
+                            var isToday = day.Date == DateTime.Today.Date;
+                            <td class="@((isToday ? "table-primary" : "")) cursor-pointer"
+                                @onclick="() => SelectDay(day)">
+                                @day.Day
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Правая колонка: дашборд выбранного дня -->
+    <div class="col-4">
+        @if (SelectedDay != DateTime.MinValue)
+        {
+            <DayDashboard @ref="DashboardRef" Date="SelectedDay" />
+        }
+        else
+        {
+            <p>Выберите день, чтобы увидеть упражнения.</p>
+        }
+    </div>
+</div>
+
+@code {
+    private DateTime CurrentMonth = DateTime.Today;
+    private List<List<DateTime>> MonthMatrix = new();
+    private DateTime SelectedDay = DateTime.MinValue;
+    private DayDashboard DashboardRef;
+
+    protected override void OnInitialized()
+    {
+        BuildMonthMatrix();
+    }
+
+    private void BuildMonthMatrix()
+    {
+        MonthMatrix.Clear();
+        var first = new DateTime(CurrentMonth.Year, CurrentMonth.Month, 1);
+        var start = first.AddDays(-(int)first.DayOfWeek + 1);
+        if (start > first) start = start.AddDays(-7);
+
+        for (int w = 0; w < 6; w++)
+        {
+            var week = new List<DateTime>();
+            for (int d = 0; d < 7; d++)
+            {
+                week.Add(start.AddDays(w * 7 + d));
+            }
+            MonthMatrix.Add(week);
+        }
+    }
+
+    private void SelectDay(DateTime day)
+    {
+        SelectedDay = day;
+        DashboardRef?.Reload(day);
+    }
+}
