@@ -27,25 +27,25 @@ public class AppDbContext : DbContext
             new ExerciseType
             {
                 Id = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                Name = "Велосипед",
+                Name = "Ходьба",
                 Unit = "км"
             },
             new ExerciseType
             {
                 Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-                Name = "Плавание",
-                Unit = "мин"
+                Name = "Велосипед",
+                Unit = "км"
             },
             new ExerciseType
             {
                 Id = Guid.Parse("44444444-4444-4444-4444-444444444444"),
-                Name = "Отжимания",
-                Unit = "раз"
+                Name = "Планка",
+                Unit = "мин"
             },
             new ExerciseType
             {
                 Id = Guid.Parse("55555555-5555-5555-5555-555555555555"),
-                Name = "Пресс",
+                Name = "Отжимания",
                 Unit = "раз"
             }
         );

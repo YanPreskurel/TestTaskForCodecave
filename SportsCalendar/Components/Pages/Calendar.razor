@@ -1,84 +1,155 @@
 ﻿@page "/calendar"
+@rendermode InteractiveServer
 @using SportsCalendar.Components.Calendar
-@using SportsCalendar.Data.Entities
 
-<h3>Календарь</h3>
+<h3>Спортивный календарь</h3>
+
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <button class="btn btn-outline-primary" @onclick="PrevMonth">←</button>
+
+    <h4 class="m-0">
+        @CurrentMonth.ToString("MMMM yyyy")
+    </h4>
+
+    <button class="btn btn-outline-primary" @onclick="NextMonth">→</button>
+</div>
 
 <div class="row">
-    <!-- Левая колонка: календарь -->
+
+    <!-- Календарь -->
     <div class="col-8">
-        <table class="table table-bordered text-center">
-            <thead>
+
+        <table class="table table-bordered text-center align-middle">
+
+            <thead class="table-light">
                 <tr>
-                    @foreach (var dayName in new[] { "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс" })
+                    @foreach (var day in DayNames)
                     {
-                        <th>@dayName</th>
+                        <th>@day</th>
                     }
                 </tr>
             </thead>
+
             <tbody>
+
                 @foreach (var week in MonthMatrix)
                 {
                     <tr>
+
                         @foreach (var day in week)
                         {
                             var isToday = day.Date == DateTime.Today.Date;
-                            <td class="@((isToday ? "table-primary" : "")) cursor-pointer"
+                            var isSelected = day.Date == SelectedDay.Date;
+                            var isCurrentMonth = day.Month == CurrentMonth.Month;
+
+                            var css =
+                            (isToday ? "table-primary " : "") +
+                            (isSelected ? "table-warning " : "") +
+                            (!isCurrentMonth ? "text-muted " : "") +
+                            "cursor-pointer";
+
+                            <td class="@css"
                                 @onclick="() => SelectDay(day)">
+
                                 @day.Day
+
                             </td>
                         }
+
                     </tr>
                 }
+
             </tbody>
+
         </table>
+
     </div>
 
-    <!-- Правая колонка: дашборд выбранного дня -->
+
+    <!-- Dashboard -->
     <div class="col-4">
+
         @if (SelectedDay != DateTime.MinValue)
         {
-            <DayDashboard @ref="DashboardRef" Date="SelectedDay" />
+            <DayDashboard @ref="DashboardRef"
+                          Date="SelectedDay" />
         }
         else
         {
-            <p>Выберите день, чтобы увидеть упражнения.</p>
+            <div class="alert alert-info">
+                Выберите день, чтобы увидеть упражнения
+            </div>
         }
+
     </div>
+
 </div>
 
+
 @code {
+
+    private readonly string[] DayNames =
+    {
+        "Пн","Вт","Ср","Чт","Пт","Сб","Вс"
+    };
+
     private DateTime CurrentMonth = DateTime.Today;
+
     private List<List<DateTime>> MonthMatrix = new();
-    private DateTime SelectedDay = DateTime.MinValue;
+
+    private DateTime SelectedDay = DateTime.Today;
+
     private DayDashboard DashboardRef;
+
 
     protected override void OnInitialized()
     {
-        BuildMonthMatrix();
+        BuildCalendar();
     }
 
-    private void BuildMonthMatrix()
+
+    void BuildCalendar()
     {
         MonthMatrix.Clear();
-        var first = new DateTime(CurrentMonth.Year, CurrentMonth.Month, 1);
-        var start = first.AddDays(-(int)first.DayOfWeek + 1);
-        if (start > first) start = start.AddDays(-7);
 
-        for (int w = 0; w < 6; w++)
+        var firstDay = new DateTime(CurrentMonth.Year, CurrentMonth.Month, 1);
+
+        int diff = (7 + (firstDay.DayOfWeek - DayOfWeek.Monday)) % 7;
+
+        var start = firstDay.AddDays(-diff);
+
+        for (int week = 0; week < 6; week++)
         {
-            var week = new List<DateTime>();
-            for (int d = 0; d < 7; d++)
+            var days = new List<DateTime>();
+
+            for (int day = 0; day < 7; day++)
             {
-                week.Add(start.AddDays(w * 7 + d));
+                days.Add(start.AddDays(week * 7 + day));
             }
-            MonthMatrix.Add(week);
+
+            MonthMatrix.Add(days);
         }
     }
 
-    private void SelectDay(DateTime day)
+
+    void PrevMonth()
+    {
+        CurrentMonth = CurrentMonth.AddMonths(-1);
+        BuildCalendar();
+        StateHasChanged();
+    }
+
+    void NextMonth()
+    {
+        CurrentMonth = CurrentMonth.AddMonths(1);
+        BuildCalendar();
+        StateHasChanged();
+    }
+
+
+    void SelectDay(DateTime day)
     {
         SelectedDay = day;
-        DashboardRef?.Reload(day);
     }
+
 }

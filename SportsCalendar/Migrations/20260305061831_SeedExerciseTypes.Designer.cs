@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SportsCalendar.Data;
@@ -11,9 +12,11 @@ using SportsCalendar.Data;
 namespace SportsCalendar.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260305061831_SeedExerciseTypes")]
+    partial class SeedExerciseTypes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,25 +78,25 @@ namespace SportsCalendar.Migrations
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
-                            Name = "Ходьба",
-                            Unit = "км"
-                        },
-                        new
-                        {
-                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             Name = "Велосипед",
                             Unit = "км"
                         },
                         new
                         {
-                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
-                            Name = "Планка",
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            Name = "Плавание",
                             Unit = "мин"
                         },
                         new
                         {
-                            Id = new Guid("55555555-5555-5555-5555-555555555555"),
+                            Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             Name = "Отжимания",
+                            Unit = "раз"
+                        },
+                        new
+                        {
+                            Id = new Guid("55555555-5555-5555-5555-555555555555"),
+                            Name = "Пресс",
                             Unit = "раз"
                         });
                 });
